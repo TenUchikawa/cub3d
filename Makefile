@@ -1,6 +1,6 @@
 CC = cc
 CFLAGS = -Wall -Werror -Wextra
-LIBFT_PATH = include/libft
+LIBFT_PATH = include/42_libft
 MLX_PATH = include/minilibx-linux
 
 SRC_DIR = src
