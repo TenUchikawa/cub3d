@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Wall -Werror -Wextra
+CFLAGS = -g #-Wall -Werror -Wextra
 LIBFT_PATH = include/42_libft
 MLX_PATH = include/minilibx-linux
 

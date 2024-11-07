@@ -6,61 +6,78 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:25:10 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/10/29 02:56:15 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/07 21:48:22 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
-#include "get_next_line.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-void	parse_texture(char *line)
+void	parse_color(char *line, int color[3])
 {
-	if (ft_strncmp(line, "NO ", 3) == 0)
+	char **colors = ft_split(line + 2, ','); // ft_splitはカンマで分割する関数と仮定
+	for (int i = 0; i < 3; i++)
 	{
-		printf("North texture: %s\n", line + 3);
+		color[i] = atoi(colors[i]);
+		free(colors[i]);
 	}
-	else if (ft_strncmp(line, "SO ", 3) == 0)
-	{
-		printf("South texture: %s\n", line + 3);
-	}
-	else if (ft_strncmp(line, "WE ", 3) == 0)
-	{
-		printf("West texture: %s\n", line + 3);
-	}
-	else if (ft_strncmp(line, "EA ", 3) == 0)
-	{
-		printf("East texture: %s\n", line + 3);
-	}
-	else if (line[0] == 'F')
-	{
-		printf("Floor color: %s\n", line + 2);
-	}
-	else if (line[0] == 'C')
-	{
-		printf("Ceiling color: %s\n", line + 2);
-	}
-	else
-	{
-		printf("Unknown element: %s\n", line);
-	}
+	free(colors);
 }
 
-void	parse_file(const char *filename)
+void	parse_texture(char *line, char **texture)
 {
-	int fd = open(filename, O_RDONLY);
-	if (fd < 0)
+	*texture = strdup(line + 3); // 3文字目以降がファイルパス
+}
+
+int	parse_map_line(char *line, char ***map, int *map_lines)
+{
+	(*map)[*map_lines] = strdup(line);
+	(*map_lines)++;
+	return (1);
+}
+
+int	parse_config(t_cub3d *cub, const char *filename)
+{
+	int		fd;
+	char	*line;
+	int		map_started;
+	int		map_lines;
+
+	fd = open(filename, O_RDONLY);
+	if (fd == -1)
 	{
 		perror("Error opening file");
-		exit(EXIT_FAILURE);
+		return (1);
 	}
-
-	char *line;
-	while ((line = get_next_line(fd)) != NULL)
+	map_started = 0;
+	map_lines = 0;
+	cub->map = malloc(sizeof(char *) * 100); // 仮の最大マップ行数
+	while (get_next_line(fd, &line) > 0)
 	{
-		// 1行ずつ処理する
-		printf("Unknown element: %s\n", line);
-		// parse_texture(line);
+		if (strncmp(line, "F ", 2) == 0)
+			parse_color(line, cub->config.floor);
+		else if (strncmp(line, "C ", 2) == 0)
+			parse_color(line, cub->config.ceiling);
+		else if (strncmp(line, "NO ", 3) == 0)
+			parse_texture(line, &cub->config.textures[0]);
+		else if (strncmp(line, "SO ", 3) == 0)
+			parse_texture(line, &cub->config.textures[1]);
+		else if (strncmp(line, "WE ", 3) == 0)
+			parse_texture(line, &cub->config.textures[2]);
+		else if (strncmp(line, "EA ", 3) == 0)
+			parse_texture(line, &cub->config.textures[3]);
+		else if (map_started || line[0] == '1')
+		{
+			map_started = 1;
+			parse_map_line(line, &cub->map, &map_lines);
+		}
 		free(line);
 	}
 	close(fd);
+	cub->map[map_lines] = NULL; // 最後にNULLで終わるようにする
+	return (0);
 }
