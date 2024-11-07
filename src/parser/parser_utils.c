@@ -1,30 +1,41 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   parser_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/14 13:01:11 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 05:23:16 by tuchikaw         ###   ########.fr       */
+/*   Created: 2024/11/08 05:56:14 by tuchikaw          #+#    #+#             */
+/*   Updated: 2024/11/08 06:03:52 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#include "cub3d.h"
 
-# include <fcntl.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <sys/stat.h>
-# include <sys/types.h>
-# include <unistd.h>
+int	init_config(t_config *config)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		config->floor[i] = -1;
+		config->ceiling[i] = -1;
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		config->textures[i] = NULL;
+	}
+	return (0);
+}
 
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 200
-# endif
+int	is_number(char *str)
+{
+	int	i;
 
-char	*get_next_line(int fd);
-char	*get_to_nr(char *static_char);
-
-#endif
+	i = 0;
+	while (str[i])
+	{
+		if (!ft_isdigit(str[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}

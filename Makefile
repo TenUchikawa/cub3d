@@ -7,7 +7,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 INCLUDE_DIR = include
 
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
+SRC_FILES = $(shell find $(SRC_DIR) -name "*.c")
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC_FILES))
 
 LIBFT = $(LIBFT_PATH)/libft.a
@@ -21,7 +21,7 @@ $(NAME): $(OBJ_FILES) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) -o $@ $^ -L$(LIBFT_PATH) -lft -L$(MLX_PATH) -lmlx -ldl -lglfw -lm -lpthread -lXext -lX11
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(LIBFT_PATH) -I$(MLX_PATH) -c -o $@ $<
 
 $(LIBFT):
