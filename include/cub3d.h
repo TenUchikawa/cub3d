@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 07:50:13 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/08 08:09:34 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include "get_next_line.h"
 # include "mlx.h"
 # include <fcntl.h>
+# include <math.h>
 # include <stdbool.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -68,4 +69,5 @@ typedef struct s_cub3d
 int				parse_config(t_cub3d *cub, const char *filename);
 int				check_config(t_cub3d *cub);
 int				init_config(t_config *config);
+int				is_number(char *str);
 #endif

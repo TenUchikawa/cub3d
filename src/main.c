@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 07:53:54 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/08 08:18:33 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,13 +42,34 @@ int	init_image(t_cub3d *cub3d)
 			&cub3d->size_line, &cub3d->endian);
 	return (0);
 }
+
+
+void	draw_test_wall(t_cub3d *cub3d)
+{
+	int		y;
+	char	*pixel;
+
+	int x = WINDOW_WIDTH / 2; // 画面中央のx座標
+	y = 0;
+	while (y < WINDOW_HEIGHT) // 画面の高さ全体に渡る縦線を描画
+	{
+		pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp / 8));
+		*(unsigned int *)pixel = 0xFFFFFF; // 白色のピクセルを設定
+		y++;
+	}
+	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
+	// ウィンドウに画像を表示
+}
+
 int	draw_scene(void *param)
 {
 	t_cub3d	*cub3d;
 
 	cub3d = (t_cub3d *)param;
+	// バッファをクリア
 	mlx_clear_window(cub3d->mlx, cub3d->window);
-	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
+	// テスト描画を呼び出し
+	draw_test_wall(cub3d);
 	return (0);
 }
 
