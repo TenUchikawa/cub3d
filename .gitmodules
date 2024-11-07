@@ -1,0 +1,6 @@
+[submodule "include/42_libft"]
+    path = include/42_libft
+    url = https://github.com/TenUchikawa/42_libft
+[submodule "include/minilibx-linux"]
+    path = include/minilibx-linux
+    url = https://github.com/42Paris/minilibx-linux
