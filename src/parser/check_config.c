@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 05:36:31 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 07:44:08 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/08 10:09:00 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,17 @@ int	check_xpm_extension(char *filename)
 	return (filename[len - 4] == '.' && filename[len - 3] == 'x' && filename[len
 		- 2] == 'p' && filename[len - 1] == 'm');
 }
+int	check_cub_extension(char *filename)
+{
+	int	len;
+
+	len = ft_strlen(filename);
+	if (len < 4)
+		return (0);
+	return (filename[len - 4] == '.' && filename[len - 3] == 'c' && filename[len
+		- 2] == 'u' && filename[len - 1] == 'b');
+}
+
 int	check_texture_paths(char *textures[4])
 {
 	char	*texture;
@@ -105,12 +116,8 @@ int	check_player_start_location(t_cub3d *cub)
 
 int	is_valid_map_char(char c)
 {
-	return (c == '0' || c == '1' || c == 'N' || c == 'S' || c == 'E' || c == 'W'
-		|| c == ' ');
-}
-int	is_wall(char c)
-{
-	return (c == '1');
+	return (c == '0' || c == '1' || c == 'N' || c == 'S' || c == 'E'
+		|| c == 'W');
 }
 
 int	check_map_chars(char **map)
@@ -144,6 +151,7 @@ int	check_map_borders(char **map)
 	i = 0;
 	while (map[i])
 	{
+		// printf("%s\n", map[i]);
 		j = 0;
 		while (map[i][j])
 		{
@@ -157,9 +165,10 @@ int	check_map_borders(char **map)
 	}
 	return (0);
 }
+
 int	check_config(t_cub3d *cub)
 {
-	if (check_texture_paths(cub->config.textures) == 1)
+	if (check_texture_paths(cub->config.texture_files) == 1)
 		return (1);
 	if (check_colors(cub->config.floor) == 1)
 		return (1);
@@ -173,4 +182,3 @@ int	check_config(t_cub3d *cub)
 		return (1);
 	return (0);
 }
-

@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 08:19:28 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/08 10:50:08 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,31 @@ int	init_window(t_cub3d *cub3d)
 	}
 	return (0);
 }
+int	load_textures(t_cub3d *cub3d)
+{
+	const char	*texture_paths[4] = {cub3d->config.texture_files[0],
+			cub3d->config.texture_files[1], cub3d->config.texture_files[2],
+			cub3d->config.texture_files[3]};
+
+	for (int i = 0; i < 4; i++)
+	{
+		cub3d->config.textures[i].img = mlx_xpm_file_to_image(cub3d->mlx,
+				(char *)texture_paths[i], &cub3d->config.textures[i].width,
+				&cub3d->config.textures[i].height);
+		if (!cub3d->config.textures[i].img)
+			return (1); // エラーハンドリング
+		cub3d->config.textures[i].data = mlx_get_data_addr(cub3d->config.textures[i].img,
+				&cub3d->config.textures[i].bpp,
+				&cub3d->config.textures[i].size_line,
+				&cub3d->config.textures[i].endian);
+	}
+	return (0);
+}
 
 int	init_image(t_cub3d *cub3d)
 {
+	if (load_textures(cub3d) == 1)
+		return (1);
 	cub3d->img = mlx_new_image(cub3d->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
 	if (!cub3d->img)
 	{
@@ -60,26 +82,51 @@ void	draw_test_wall(t_cub3d *cub3d)
 	// ウィンドウに画像を表示
 }
 
-void	draw_wall_column(t_cub3d *cub3d, int x, int start, int end, int color)
+void	draw_wall_column(t_cub3d *cub3d, int x, int start, int end,
+		int tex_index, double wall_x)
 {
 	int		y;
+	int		tex_x;
+	int		tex_y;
+	double	step;
+	double	tex_pos;
 	char	*pixel;
+	char	*texture_data;
+	int		color;
+	int		line_height;
+	char	*img_pixel;
 
-	y = start;
-	while (y < end)
+	texture_data = cub3d->config.textures[tex_index].data;
+	line_height = end - start;
+	// テクスチャのX座標を計算
+	tex_x = (int)(wall_x * cub3d->config.textures[tex_index].width);
+	if (tex_x < 0)
+		tex_x = 0;
+	if (tex_x >= cub3d->config.textures[tex_index].width)
+		tex_x = cub3d->config.textures[tex_index].width - 1;
+	step = 1.0 * cub3d->config.textures[tex_index].height / line_height;
+	tex_pos = (start - WINDOW_HEIGHT / 2 + line_height / 2) * step;
+	for (y = start; y < end; y++)
 	{
-		pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp / 8));
-		*(unsigned int *)pixel = color; // 壁の色をセット
-		y++;
+		tex_y = (int)tex_pos & (cub3d->config.textures[tex_index].height - 1);
+		tex_pos += step;
+		pixel = texture_data + (tex_y
+				* cub3d->config.textures[tex_index].size_line + tex_x
+				* (cub3d->config.textures[tex_index].bpp / 8));
+		color = *(unsigned int *)pixel;
+		img_pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
+					/ 8));
+		*(unsigned int *)img_pixel = color;
 	}
 }
-
-double	cast_ray(t_cub3d *cub3d, double ray_dir_x, double ray_dir_y)
+double	cast_ray(t_cub3d *cub3d, double ray_dir_x, double ray_dir_y,
+		int *tex_index, double *wall_x)
 {
 	int		map_x;
 	int		map_y;
 	double	delta_dist_x;
 	double	delta_dist_y;
+	double	perp_wall_dist;
 
 	map_x = (int)cub3d->player.x;
 	map_y = (int)cub3d->player.y;
@@ -123,59 +170,92 @@ double	cast_ray(t_cub3d *cub3d, double ray_dir_x, double ray_dir_y)
 			side = 1;
 		}
 		if (cub3d->map[map_y][map_x] == '1')
-			hit = 1; // 壁に衝突
+			hit = 1;
 	}
-	return (side == 0) ? (side_dist_x - delta_dist_x) : (side_dist_y
-		- delta_dist_y);
+	// 壁までの距離を計算
+	if (side == 0)
+	{
+		perp_wall_dist = (side_dist_x - delta_dist_x);
+		*wall_x = cub3d->player.y + perp_wall_dist * ray_dir_y;
+		*tex_index = (ray_dir_x > 0) ? 2 : 3; // 西か東
+	}
+	else
+	{
+		perp_wall_dist = (side_dist_y - delta_dist_y);
+		*wall_x = cub3d->player.x + perp_wall_dist * ray_dir_x;
+		*tex_index = (ray_dir_y > 0) ? 0 : 1; // 北か南
+	}
+	*wall_x -= floor(*wall_x);
+	return (perp_wall_dist);
 }
+int	create_color(int r, int g, int b)
+{
+	return ((r << 16) | (g << 8) | b);
+}
+void	draw_floor_and_ceiling(t_cub3d *cub3d)
+{
+	int		ceiling_color;
+	int		floor_color;
+	char	*pixel;
+
+	ceiling_color = create_color(cub3d->config.ceiling[0],
+			cub3d->config.ceiling[1], cub3d->config.ceiling[2]);
+	floor_color = create_color(cub3d->config.floor[0], cub3d->config.floor[1],
+			cub3d->config.floor[2]);
+	int x, y;
+	// 天井の描画
+	for (y = 0; y < WINDOW_HEIGHT / 2; y++)
+	{
+		for (x = 0; x < WINDOW_WIDTH; x++)
+		{
+			pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
+						/ 8));
+			*(unsigned int *)pixel = ceiling_color;
+		}
+	}
+	// 床の描画
+	for (y = WINDOW_HEIGHT / 2; y < WINDOW_HEIGHT; y++)
+	{
+		for (x = 0; x < WINDOW_WIDTH; x++)
+		{
+			pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
+						/ 8));
+			*(unsigned int *)pixel = floor_color;
+		}
+	}
+}
+
 int	draw_scene(void *param)
 {
 	t_cub3d	*cub3d;
 	int		x;
-	double	perp_wall_dist;
-	int		color;
 
 	cub3d = (t_cub3d *)param;
-	x = 0;
 	double camera_x, ray_dir_x, ray_dir_y;
-	int line_height, draw_start, draw_end;
-	// 画像バッファをクリア
-	mlx_clear_window(cub3d->mlx, cub3d->window);
+	double perp_wall_dist, wall_x;
+	int line_height, draw_start, draw_end, tex_index;
+	// 天井と床の描画
+	draw_floor_and_ceiling(cub3d);
+	// 壁の描画
+	x = 0;
 	while (x < WINDOW_WIDTH)
 	{
-		// カメラ面のX座標を計算
 		camera_x = 2 * x / (double)WINDOW_WIDTH - 1;
 		ray_dir_x = cub3d->player.dir_x + cub3d->player.plane_x * camera_x;
 		ray_dir_y = cub3d->player.dir_y + cub3d->player.plane_y * camera_x;
-		// 壁までの距離を取得
-		perp_wall_dist = cast_ray(cub3d, ray_dir_x, ray_dir_y);
-		// 距離に基づいて線の高さを計算
+		perp_wall_dist = cast_ray(cub3d, ray_dir_x, ray_dir_y, &tex_index,
+				&wall_x);
 		line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
 		draw_start = -line_height / 2 + WINDOW_HEIGHT / 2;
 		draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
-		// 画面外に出ないようにクリッピング
 		if (draw_start < 0)
 			draw_start = 0;
 		if (draw_end >= WINDOW_HEIGHT)
 			draw_end = WINDOW_HEIGHT - 1;
-		// 壁の色（テスト用に白）
-		color = 0xFFFFFF;
-		// 壁を描画
-		draw_wall_column(cub3d, x, draw_start, draw_end, color);
+		draw_wall_column(cub3d, x, draw_start, draw_end, tex_index, wall_x);
 		x++;
 	}
-	// 描画した画像をウィンドウに表示
 	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
-	return (0);
-}
-
-int	handle_keypress(int keycode, t_cub3d *cub3d)
-{
-	if (keycode == 65307)
-	{
-		mlx_destroy_window(cub3d->mlx, cub3d->window);
-		exit(0);
-	}
 	return (0);
 }
 
@@ -193,11 +273,12 @@ int	main(int argc, char **argv)
 
 	if (argc != 2)
 	{
-		printf("Usage: %s <map_file>\n", argv[0]);
-		return (1);
+		// printf("Usage: %s <map_file>\n", argv[0]);
+		// return (1);
+		argv[1] = "maps/good/test_textures.cub";
 	}
 
-	if (parse_config(&cub3d, argv[1]) == -1)
+	if (parse_config(&cub3d, argv[1]) == 1)
 	{
 		printf("Error\nFailed to parse config\n");
 		return (1);
@@ -215,10 +296,10 @@ int	main(int argc, char **argv)
 	}
 
 	// configの表示
-	printf("Floor color: %d, %d, %d\n", cub3d.config.floor[0],
-		cub3d.config.floor[1], cub3d.config.floor[2]);
-	printf("Ceiling color: %d, %d, %d\n", cub3d.config.ceiling[0],
-		cub3d.config.ceiling[1], cub3d.config.ceiling[2]);
+	// printf("Floor color: %d, %d, %d\n", cub3d.config.floor[0],
+	// 	cub3d.config.floor[1], cub3d.config.floor[2]);
+	// printf("Ceiling color: %d, %d, %d\n", cub3d.config.ceiling[0],
+	// 	cub3d.config.ceiling[1], cub3d.config.ceiling[2]);
 	// printf("NO texture: %s\n", cub3d.config.textures[0]);
 	// printf("SO texture: %s\n", cub3d.config.textures[1]);
 	// printf("WE texture: %s\n", cub3d.config.textures[2]);
@@ -230,13 +311,6 @@ int	main(int argc, char **argv)
 		return (1);
 	setup_hooks(&cub3d);
 	mlx_loop(cub3d.mlx);
-	// cub3d.mlx = mlx_init();
-	// cub3d.window = mlx_new_window(cub3d.mlx, 640, 480, "cub3D");
-
-	// メインループ
-	// mlx_loop_hook(cub3d.mlx, render_frame, &cub3d);
-	// mlx_hook(cub3d.window, 2, 1L << 0, handle_input, &cub3d);
-	// mlx_loop(cub3d.mlx);
 
 	return (0);
 }

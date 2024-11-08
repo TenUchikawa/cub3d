@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 08:09:34 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/08 09:48:09 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,33 @@
 #  define WINDOW_HEIGHT 480
 # endif
 
+# ifndef MOVE_SPEED
+#  define MOVE_SPEED 0.1
+# endif
+
+# ifndef ROT_SPEED
+#  define ROT_SPEED 0.05
+# endif
+
 // structures
+
+typedef struct s_texture
+{
+	void		*img;
+	char		*data;
+	int			width;
+	int			height;
+	int			bpp;
+	int			size_line;
+	int			endian;
+}				t_texture;
 
 typedef struct s_config
 {
 	int			floor[3];
 	int			ceiling[3];
-	char *textures[4]; // NO, SO, WE, EA
+	char *texture_files[4]; // NO, SO, WE, EA
+	t_texture	textures[4];
 }				t_config;
 
 typedef struct s_player
@@ -70,4 +90,13 @@ int				parse_config(t_cub3d *cub, const char *filename);
 int				check_config(t_cub3d *cub);
 int				init_config(t_config *config);
 int				is_number(char *str);
+int				check_cub_extension(char *filename);
+// key_handle
+int				handle_keypress(int keycode, t_cub3d *cub3d);
+
+// move
+void			move_player(t_cub3d *cub3d, int direction);
+void			strafe_player(t_cub3d *cub3d, int direction);
+void			rotate_player(t_cub3d *cub3d, int direction);
+
 #endif
