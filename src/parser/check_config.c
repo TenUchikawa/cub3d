@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 05:36:31 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 10:09:00 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:37:22 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,14 +79,35 @@ int	set_player_location(t_cub3d *cub, int i, int j)
 {
 	cub->player.x = j + 0.5;
 	cub->player.y = i + 0.5;
-	cub->player.dir_x = (cub->map[i][j] == 'E'
-			|| cub->map[i][j] == 'W') ? 0 : 1;
-	cub->player.dir_y = (cub->map[i][j] == 'S'
-			|| cub->map[i][j] == 'N') ? 0 : 1;
-	cub->player.plane_x = (cub->map[i][j] == 'E'
-			|| cub->map[i][j] == 'W') ? 0.66 : 0;
-	cub->player.plane_y = (cub->map[i][j] == 'S'
-			|| cub->map[i][j] == 'N') ? 0.66 : 0;
+	if (cub->map[i][j] == 'N')
+	{
+		cub->player.dir_x = 0;
+		cub->player.dir_y = -1;
+		cub->player.plane_x = 0.66;
+		cub->player.plane_y = 0;
+	}
+	else if (cub->map[i][j] == 'S')
+	{
+		cub->player.dir_x = 0;
+		cub->player.dir_y = 1;
+		cub->player.plane_x = -0.66;
+		cub->player.plane_y = 0;
+	}
+	else if (cub->map[i][j] == 'E')
+	{
+		cub->player.dir_x = 1;
+		cub->player.dir_y = 0;
+		cub->player.plane_x = 0;
+		cub->player.plane_y = 0.66;
+	}
+	else if (cub->map[i][j] == 'W')
+	{
+		cub->player.dir_x = -1;
+		cub->player.dir_y = 0;
+		cub->player.plane_x = 0;
+		cub->player.plane_y = -0.66;
+	}
+	return (0);
 }
 
 int	check_player_start_location(t_cub3d *cub)

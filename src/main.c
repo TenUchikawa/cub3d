@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 10:50:08 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/08 12:28:20 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,7 +275,7 @@ int	main(int argc, char **argv)
 	{
 		// printf("Usage: %s <map_file>\n", argv[0]);
 		// return (1);
-		argv[1] = "maps/good/test_textures.cub";
+		argv[1] = "maps/good/cheese_maze.cub";
 	}
 
 	if (parse_config(&cub3d, argv[1]) == 1)
