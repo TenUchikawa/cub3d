@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 09:51:56 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 11:51:42 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,23 +29,30 @@ int	init_window(t_cub3d *cub3d)
 	}
 	return (0);
 }
+
 int	load_textures(t_cub3d *cub3d)
 {
-	const char	*texture_paths[4] = {cub3d->config.texture_files[0],
-			cub3d->config.texture_files[1], cub3d->config.texture_files[2],
-			cub3d->config.texture_files[3]};
+	char		**tfs;
+	t_texture	*ts;
+	const char	*texture_paths[4];
+	int			i;
 
-	for (int i = 0; i < 4; i++)
+	ts = cub3d->config.textures;
+	tfs = cub3d->config.texture_files;
+	texture_paths[0] = tfs[0];
+	texture_paths[1] = tfs[1];
+	texture_paths[2] = tfs[2];
+	texture_paths[3] = tfs[3];
+	i = 0;
+	while (i < 4)
 	{
-		cub3d->config.textures[i].img = mlx_xpm_file_to_image(cub3d->mlx,
-				(char *)texture_paths[i], &cub3d->config.textures[i].width,
-				&cub3d->config.textures[i].height);
-		if (!cub3d->config.textures[i].img)
-			return (1); // エラーハンドリング
-		cub3d->config.textures[i].data = mlx_get_data_addr(cub3d->config.textures[i].img,
-				&cub3d->config.textures[i].bpp,
-				&cub3d->config.textures[i].size_line,
-				&cub3d->config.textures[i].endian);
+		ts[i].img = mlx_xpm_file_to_image(cub3d->mlx, (char *)texture_paths[i],
+				&ts[i].width, &ts[i].height);
+		if (!ts[i].img)
+			return (1);
+		ts[i].data = mlx_get_data_addr(ts[i].img, &ts[i].bpp, &ts[i].size_line,
+				&ts[i].endian);
+		i++;
 	}
 	return (0);
 }
@@ -65,118 +72,184 @@ int	init_image(t_cub3d *cub3d)
 	return (0);
 }
 
+// void	draw_wall_column(t_cub3d *cub3d, int x, int start, int end,
+// 		int tex_index, double wall_x)
+// {
+// 	int		y;
+// 	int		tex_x;
+// 	int		tex_y;
+// 	double	step;
+// 	double	tex_pos;
+// 	char	*pixel;
+// 	char	*texture_data;
+// 	int		color;
+// 	int		line_height;
+// 	char	*img_pixel;
 
+// 	texture_data = cub3d->config.textures[tex_index].data;
+// 	line_height = end - start;
+// 	// テクスチャのX座標を計算
+// 	tex_x = (int)(wall_x * cub3d->config.textures[tex_index].width);
+// 	if (tex_x < 0)
+// 		tex_x = 0;
+// 	if (tex_x >= cub3d->config.textures[tex_index].width)
+// 		tex_x = cub3d->config.textures[tex_index].width - 1;
+// 	step = 1.0 * cub3d->config.textures[tex_index].height / line_height;
+// 	tex_pos = (start - WINDOW_HEIGHT / 2 + line_height / 2) * step;
+// 	for (y = start; y < end; y++)
+// 	{
+// 		tex_y = (int)tex_pos & (cub3d->config.textures[tex_index].height - 1);
+// 		tex_pos += step;
+// 		pixel = texture_data + (tex_y
+// 				* cub3d->config.textures[tex_index].size_line + tex_x
+// 				* (cub3d->config.textures[tex_index].bpp / 8));
+// 		color = *(unsigned int *)pixel;
+// 		img_pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
+// 					/ 8));
+// 		*(unsigned int *)img_pixel = color;
+// 	}
+// }
 
-void	draw_wall_column(t_cub3d *cub3d, int x, int start, int end,
-		int tex_index, double wall_x)
+int	get_tex_x(t_texture *texture, double wall_x)
 {
-	int		y;
-	int		tex_x;
-	int		tex_y;
-	double	step;
-	double	tex_pos;
-	char	*pixel;
-	char	*texture_data;
-	int		color;
-	int		line_height;
-	char	*img_pixel;
+	int	tex_x;
 
-	texture_data = cub3d->config.textures[tex_index].data;
-	line_height = end - start;
-	// テクスチャのX座標を計算
-	tex_x = (int)(wall_x * cub3d->config.textures[tex_index].width);
+	tex_x = (int)(wall_x * texture->width);
 	if (tex_x < 0)
 		tex_x = 0;
-	if (tex_x >= cub3d->config.textures[tex_index].width)
-		tex_x = cub3d->config.textures[tex_index].width - 1;
-	step = 1.0 * cub3d->config.textures[tex_index].height / line_height;
-	tex_pos = (start - WINDOW_HEIGHT / 2 + line_height / 2) * step;
-	for (y = start; y < end; y++)
+	if (tex_x >= texture->width)
+		tex_x = texture->width - 1;
+	return (tex_x);
+}
+
+void	draw_pixel(t_cub3d *cub3d, int x, int y, int color)
+{
+	char	*img_pixel;
+
+	img_pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp / 8));
+	*(unsigned int *)img_pixel = color;
+}
+
+void	init_wall_column(t_cub3d *cub3d, t_wall_column *col)
+{
+	t_texture	*texture;
+
+	texture = &cub3d->config.textures[col->tex_index];
+	col->texture_data = texture->data;
+	col->tex_x = (int)(col->wall_x * texture->width);
+	if (col->tex_x < 0)
+		col->tex_x = 0;
+	if (col->tex_x >= texture->width)
+		col->tex_x = texture->width - 1;
+	col->step = 1.0 * texture->height / (col->end - col->start);
+	col->tex_pos = (col->start - WINDOW_HEIGHT / 2 + (col->end - col->start)
+			/ 2) * col->step;
+}
+
+void	draw_wall_column(t_cub3d *cub3d, int x, t_wall_column *col)
+{
+	int			y;
+	int			color;
+	t_texture	*texture;
+
+	texture = &cub3d->config.textures[col->tex_index];
+	init_wall_column(cub3d, col);
+	y = col->start;
+	while (y < col->end)
 	{
-		tex_y = (int)tex_pos & (cub3d->config.textures[tex_index].height - 1);
-		tex_pos += step;
-		pixel = texture_data + (tex_y
-				* cub3d->config.textures[tex_index].size_line + tex_x
-				* (cub3d->config.textures[tex_index].bpp / 8));
-		color = *(unsigned int *)pixel;
-		img_pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
-					/ 8));
-		*(unsigned int *)img_pixel = color;
+		col->tex_y = (int)col->tex_pos & (texture->height - 1);
+		col->tex_pos += col->step;
+		color = *(unsigned int *)(col->texture_data + col->tex_y
+				* texture->size_line + col->tex_x * (texture->bpp / 8));
+		draw_pixel(cub3d, x, y, color);
+		y++;
 	}
 }
+
+void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
+{
+	dda->delta_dist_x = fabs(1 / ray_dir_x);
+	dda->delta_dist_y = fabs(1 / ray_dir_y);
+	if (ray_dir_x < 0)
+	{
+		dda->step_x = -1;
+		dda->side_dist_x = (cub3d->player.x - (int)cub3d->player.x)
+			* dda->delta_dist_x;
+	}
+	else
+	{
+		dda->step_x = 1;
+		dda->side_dist_x = ((int)cub3d->player.x + 1.0 - cub3d->player.x)
+			* dda->delta_dist_x;
+	}
+	if (ray_dir_y < 0)
+	{
+		dda->step_y = -1;
+		dda->side_dist_y = (cub3d->player.y - (int)cub3d->player.y)
+			* dda->delta_dist_y;
+	}
+	else
+	{
+		dda->step_y = 1;
+		dda->side_dist_y = ((int)cub3d->player.y + 1.0 - cub3d->player.y)
+			* dda->delta_dist_y;
+	}
+}
+
+int	perform_dda(t_cub3d *cub3d, t_dda *dda, int *map_x, int *map_y)
+{
+	while (1)
+	{
+		if (dda->side_dist_x < dda->side_dist_y)
+		{
+			dda->side_dist_x += dda->delta_dist_x;
+			*map_x += dda->step_x;
+			dda->side = 0;
+		}
+		else
+		{
+			dda->side_dist_y += dda->delta_dist_y;
+			*map_y += dda->step_y;
+			dda->side = 1;
+		}
+		if (cub3d->map[*map_y][*map_x] == '1')
+			return (1);
+	}
+}
+
 double	cast_ray(t_cub3d *cub3d, double ray_dir_x, double ray_dir_y,
 		int *tex_index, double *wall_x)
 {
 	int		map_x;
 	int		map_y;
-	double	delta_dist_x;
-	double	delta_dist_y;
 	double	perp_wall_dist;
+	t_dda	dda;
 
 	map_x = (int)cub3d->player.x;
 	map_y = (int)cub3d->player.y;
-	delta_dist_x = fabs(1 / ray_dir_x);
-	delta_dist_y = fabs(1 / ray_dir_y);
-	double side_dist_x, side_dist_y;
-	int step_x, step_y, hit = 0, side;
-	if (ray_dir_x < 0)
+	init_dda(cub3d, &dda, ray_dir_x, ray_dir_y);
+	perform_dda(cub3d, &dda, &map_x, &map_y);
+	if (dda.side == 0)
 	{
-		step_x = -1;
-		side_dist_x = (cub3d->player.x - map_x) * delta_dist_x;
-	}
-	else
-	{
-		step_x = 1;
-		side_dist_x = (map_x + 1.0 - cub3d->player.x) * delta_dist_x;
-	}
-	if (ray_dir_y < 0)
-	{
-		step_y = -1;
-		side_dist_y = (cub3d->player.y - map_y) * delta_dist_y;
-	}
-	else
-	{
-		step_y = 1;
-		side_dist_y = (map_y + 1.0 - cub3d->player.y) * delta_dist_y;
-	}
-	// DDAアルゴリズムでRayを進め、壁との衝突を検出
-	while (hit == 0)
-	{
-		if (side_dist_x < side_dist_y)
-		{
-			side_dist_x += delta_dist_x;
-			map_x += step_x;
-			side = 0;
-		}
-		else
-		{
-			side_dist_y += delta_dist_y;
-			map_y += step_y;
-			side = 1;
-		}
-		if (cub3d->map[map_y][map_x] == '1')
-			hit = 1;
-	}
-	// 壁までの距離を計算
-	if (side == 0)
-	{
-		perp_wall_dist = (side_dist_x - delta_dist_x);
+		perp_wall_dist = (dda.side_dist_x - dda.delta_dist_x);
 		*wall_x = cub3d->player.y + perp_wall_dist * ray_dir_y;
 		*tex_index = (ray_dir_x > 0) ? 2 : 3; // 西か東
 	}
 	else
 	{
-		perp_wall_dist = (side_dist_y - delta_dist_y);
+		perp_wall_dist = (dda.side_dist_y - dda.delta_dist_y);
 		*wall_x = cub3d->player.x + perp_wall_dist * ray_dir_x;
 		*tex_index = (ray_dir_y > 0) ? 0 : 1; // 北か南
 	}
 	*wall_x -= floor(*wall_x);
 	return (perp_wall_dist);
 }
+
 int	create_color(int r, int g, int b)
 {
 	return ((r << 16) | (g << 8) | b);
 }
+
 void	draw_floor_and_ceiling(t_cub3d *cub3d)
 {
 	int		ceiling_color;
@@ -212,8 +285,9 @@ void	draw_floor_and_ceiling(t_cub3d *cub3d)
 
 int	draw_scene(void *param)
 {
-	t_cub3d	*cub3d;
-	int		x;
+	t_cub3d			*cub3d;
+	int				x;
+	t_wall_column	col;
 
 	cub3d = (t_cub3d *)param;
 	double camera_x, ray_dir_x, ray_dir_y;
@@ -237,7 +311,11 @@ int	draw_scene(void *param)
 			draw_start = 0;
 		if (draw_end >= WINDOW_HEIGHT)
 			draw_end = WINDOW_HEIGHT - 1;
-		draw_wall_column(cub3d, x, draw_start, draw_end, tex_index, wall_x);
+		col.start = draw_start;
+		col.end = draw_end;
+		col.tex_index = tex_index;
+		col.wall_x = wall_x;
+		draw_wall_column(cub3d, x, &col);
 		x++;
 	}
 	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
@@ -252,50 +330,26 @@ void	setup_hooks(t_cub3d *cub3d)
 
 int	main(int argc, char **argv)
 {
-	t_cub3d cub3d;
+	t_cub3d	cub3d;
 
 	init_config((&cub3d));
-
 	if (argc != 2)
 	{
-		// printf("Usage: %s <map_file>\n", argv[0]);
-		// return (1);
-		argv[1] = "maps/good/test_whitespace.cub";
+		printf("Usage: %s <map_file>\n", argv[0]);
+		return (1);
 	}
-
 	if (parse_config(&cub3d, argv[1]) == 1)
 	{
 		printf("Error Failed to parse config\n");
 		exit(1);
 	}
-
-	// マップの表示
-	// for (int i = 0; cub3d.map[i]; i++)
-	// {
-	// 	printf("%s\n", cub3d.map[i]);
-	// }
-
 	if (check_config(&cub3d) == 1)
-	{
 		exit(1);
-	}
-
-	// configの表示
-	// printf("Floor color: %d, %d, %d\n", cub3d.config.floor[0],
-	// 	cub3d.config.floor[1], cub3d.config.floor[2]);
-	// printf("Ceiling color: %d, %d, %d\n", cub3d.config.ceiling[0],
-	// 	cub3d.config.ceiling[1], cub3d.config.ceiling[2]);
-	// printf("NO texture: %s\n", cub3d.config.textures[0]);
-	// printf("SO texture: %s\n", cub3d.config.textures[1]);
-	// printf("WE texture: %s\n", cub3d.config.textures[2]);
-	// printf("EA texture: %s\n", cub3d.config.textures[3]);
-
-	// if (init_window(&cub3d) == 1)
-	// 	return (1);
-	// if (init_image(&cub3d) == 1)
-	// 	return (1);
-	// setup_hooks(&cub3d);
-	// mlx_loop(cub3d.mlx);
-
+	if (init_window(&cub3d) == 1)
+		exit(1);
+	if (init_image(&cub3d) == 1)
+		exit(1);
+	setup_hooks(&cub3d);
+	mlx_loop(cub3d.mlx);
 	return (0);
 }

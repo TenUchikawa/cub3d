@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 07:40:18 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 11:51:16 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,29 @@ typedef struct s_cub3d
 	int endian;     // エンディアン情報
 
 }				t_cub3d;
+
+typedef struct s_wall_column
+{
+	int			start;
+	int			end;
+	int			tex_index;
+	double		wall_x;
+	int			tex_x;
+	int			tex_y;
+	double		step;
+	double		tex_pos;
+	char		*texture_data;
+}				t_wall_column;
+typedef struct s_dda
+{
+	double		side_dist_x;
+	double		side_dist_y;
+	double		delta_dist_x;
+	double		delta_dist_y;
+	int			step_x;
+	int			step_y;
+	int			side;
+}				t_dda;
 
 // parser
 int				parse_config(t_cub3d *cub, const char *filename);

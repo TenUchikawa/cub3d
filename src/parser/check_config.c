@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 05:36:31 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 08:02:55 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:35:42 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@ int	check_xpm_extension(char *filename)
 	len = ft_strlen(filename);
 	if (len < 4)
 		return (0);
-	return (filename[len - 4] == '.' && filename[len - 3] == 'x' && filename[len
-		- 2] == 'p' && filename[len - 1] == 'm');
+	return (ft_strncmp(&filename[len - 4], ".xpm", 4) == 0);
 }
+
 int	check_cub_extension(char *filename)
 {
 	int	len;
@@ -29,34 +29,26 @@ int	check_cub_extension(char *filename)
 	len = ft_strlen(filename);
 	if (len < 4)
 		return (0);
-	return (filename[len - 4] == '.' && filename[len - 3] == 'c' && filename[len
-		- 2] == 'u' && filename[len - 1] == 'b');
+	return (ft_strncmp(&filename[len - 4], ".cub", 4) == 0);
 }
 
 int	check_texture_paths(char *textures[4])
 {
 	char	*texture;
 	int		fd;
+	int		i;
 
-	for (int i = 0; i < 4; i++)
+	i = -1;
+	while (++i < 4)
 	{
 		texture = textures[i];
 		if (!texture)
-		{
-			printf("Error: Texture path is not set\n");
-			return (1);
-		}
+			return (printf("Error: Texture path is not set\n"), 1);
 		if (!check_xpm_extension(texture))
-		{
-			printf("Error: Texture %s does not have .xpm extension\n", texture);
-			return (1);
-		}
+			return (printf("Error: Texture %s missing .xpm ext\n", texture), 1);
 		fd = open(texture, O_RDONLY);
 		if (fd == -1)
-		{
-			printf("Error: Texture file not found %s\n", texture);
-			return (1);
-		}
+			return (printf("Error: Texture file not found %s\n", texture), 1);
 		close(fd);
 	}
 	return (0);
@@ -64,7 +56,10 @@ int	check_texture_paths(char *textures[4])
 
 int	check_colors(int color[3])
 {
-	for (int i = 0; i < 3; i++)
+	int	i;
+
+	i = -1;
+	while (++i < 3)
 	{
 		if (color[i] < 0 || color[i] > 255)
 		{
@@ -81,30 +76,22 @@ int	set_player_location(t_cub3d *cub, int x, int y)
 	cub->player.y = y + 0.5;
 	if (cub->map[y][x] == 'N')
 	{
-		cub->player.dir_x = 0;
 		cub->player.dir_y = -1;
 		cub->player.plane_x = 0.66;
-		cub->player.plane_y = 0;
 	}
 	else if (cub->map[y][x] == 'S')
 	{
-		cub->player.dir_x = 0;
 		cub->player.dir_y = 1;
 		cub->player.plane_x = -0.66;
-		cub->player.plane_y = 0;
 	}
 	else if (cub->map[y][x] == 'E')
 	{
 		cub->player.dir_x = 1;
-		cub->player.dir_y = 0;
-		cub->player.plane_x = 0;
 		cub->player.plane_y = 0.66;
 	}
 	else if (cub->map[y][x] == 'W')
 	{
 		cub->player.dir_x = -1;
-		cub->player.dir_y = 0;
-		cub->player.plane_x = 0;
 		cub->player.plane_y = -0.66;
 	}
 	return (0);
@@ -113,23 +100,27 @@ int	set_player_location(t_cub3d *cub, int x, int y)
 int	check_player_start_location(t_cub3d *cub)
 {
 	int	player_count;
+	int	y;
+	int	x;
 
 	player_count = 0;
-	for (int y = 0; cub->map[y]; y++)
+	y = -1;
+	while (cub->map[++y])
 	{
-		for (int x = 0; cub->map[y][x]; x++)
+		x = -1;
+		while (cub->map[y][++x])
 		{
 			if (cub->map[y][x] == 'N' || cub->map[y][x] == 'S'
 				|| cub->map[y][x] == 'W' || cub->map[y][x] == 'E')
 			{
 				player_count++;
-				set_player_location(cub, x,y);
+				set_player_location(cub, x, y);
 			}
 		}
 	}
 	if (player_count != 1)
 	{
-		printf("Error: Player start location is not set or set multiple times\n");
+		printf("Error: Player start location missing or set multiple times\n");
 		return (1);
 	}
 	return (0);

@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:25:10 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 09:45:10 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:19:32 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,11 @@
 int	parse_color(char *line, int color[3])
 {
 	char	**colors;
+	int		i;
 
 	colors = ft_split(line + 2, ',');
-	for (int i = 0; i < 3; i++)
+	i = -1;
+	while (++i < 3)
 	{
 		if (colors[i] == NULL)
 		{
@@ -52,8 +54,7 @@ int	parse_texture(char *line, char **texture)
 		printf("Error: Texture path is set multiple times\n");
 		return (1);
 	}
-	
-	*texture = ft_strtrim(line+3," \t\n");
+	*texture = ft_strtrim(line + 3, " \t\n");
 	return (0);
 }
 
@@ -68,9 +69,9 @@ int	parse_map_line(t_cub3d *cub, char *line)
 		return (1);
 	cub->map[cub->map_height] = strdup(line);
 	cub->map_height++;
-	// printf("%s\n", line);
 	return (0);
 }
+
 char	*skip_whitespace(char *line)
 {
 	while (*line && (*line == ' ' || *line == '\t'))
@@ -78,10 +79,15 @@ char	*skip_whitespace(char *line)
 	return (line);
 }
 
+void	replace_end_nl_to_eol(char *line)
+{
+	if (line[strlen(line) - 1] == '\n')
+		line[strlen(line) - 1] = '\0';
+}
+
 int	parse_settings(t_cub3d *cub, char *line)
 {
 	line = skip_whitespace(line);
-	// printf("%s\n", line);
 	if (ft_strlen(line) == 0)
 		return (0);
 	if (ft_strncmp(line, "F ", 2) == 0)
@@ -98,64 +104,111 @@ int	parse_settings(t_cub3d *cub, char *line)
 		return (parse_texture(line, &cub->config.texture_files[3]));
 	return (2);
 }
-int	parse_config(t_cub3d *cub, const char *filename)
+
+int	parse_settings_and_map(t_cub3d *cub, int fd)
 {
-	int		fd;
 	char	*line;
 	int		map_started;
-	int		map_end;
 	int		parse_result;
+	int		map_end;
 
-	if (!check_cub_extension((char *)filename))
-	{
-		printf("Error: Invalid file extension\n");
-		return (1);
-	}
-	fd = open(filename, O_RDONLY);
-	if (fd == -1)
-	{
-		perror("Error opening file");
-		return (1);
-	}
 	map_started = 0;
 	map_end = 0;
-	cub->map = malloc(sizeof(char *) * MAP_MAX_HEIGHT);
-	if (!cub->map)
-		return (perror("Memory allocation error"), close(fd), 1);
 	line = get_next_line(fd);
 	while (line)
 	{
-		if (line[strlen(line) - 1] == '\n')
-			line[strlen(line) - 1] = '\0';
+		replace_end_nl_to_eol(line);
 		if (!map_started)
 			parse_result = parse_settings(cub, line);
 		if (parse_result == 1)
-		{
-			free(line);
-			close(fd);
-			return (1);
-		}
+			return (free(line), 1);
 		else if (parse_result == 2)
 			map_started = 1;
-		if (!map_end && map_started)
-		{
-			if (parse_map_line(cub, line) == 1)
-				map_end = 1;
-		}
+		if (map_started && parse_map_line(cub, line) == 1)
+			map_end = 1;
 		else if (map_end && *skip_whitespace(line))
-		{
-
-			
-			printf("Error: Invalid line after map\n");
-			free(line);
-			close(fd);
-			cub->map[cub->map_height] = NULL;
-			return (1);
-		}
+			return (printf("Error: Invalid line after map\n"), free(line), 1);
 		free(line);
 		line = get_next_line(fd);
 	}
+	return (0);
+}
+
+int	parse_config(t_cub3d *cub, const char *filename)
+{
+	int	fd;
+
+	if (!check_cub_extension((char *)filename))
+		return (printf("Error: Invalid file extension\n"), 1);
+	fd = open(filename, O_RDONLY);
+	if (fd == -1)
+		return (perror("Error opening file"), 1);
+	cub->map = malloc(sizeof(char *) * MAP_MAX_HEIGHT);
+	if (!cub->map)
+		return (perror("Memory allocation error"), close(fd), 1);
+	if (parse_settings_and_map(cub, fd))
+		return (close(fd), 1);
 	close(fd);
 	cub->map[cub->map_height] = NULL;
 	return (0);
 }
+
+// int	parse_config(t_cub3d *cub, const char *filename)
+// {
+// 	int		fd;
+// 	char	*line;
+// 	int		map_started;
+// 	int		map_end;
+// 	int		parse_result;
+
+// 	if (!check_cub_extension((char *)filename))
+// 	{
+// 		printf("Error: Invalid file extension\n");
+// 		return (1);
+// 	}
+// 	fd = open(filename, O_RDONLY);
+// 	if (fd == -1)
+// 	{
+// 		perror("Error opening file");
+// 		return (1);
+// 	}
+// 	map_started = 0;
+// 	map_end = 0;
+// 	cub->map = malloc(sizeof(char *) * MAP_MAX_HEIGHT);
+// 	if (!cub->map)
+// 		return (perror("Memory allocation error"), close(fd), 1);
+// 	line = get_next_line(fd);
+// 	while (line)
+// 	{
+// 		if (line[strlen(line) - 1] == '\n')
+// 			line[strlen(line) - 1] = '\0';
+// 		if (!map_started)
+// 			parse_result = parse_settings(cub, line);
+// 		if (parse_result == 1)
+// 		{
+// 			free(line);
+// 			close(fd);
+// 			return (1);
+// 		}
+// 		else if (parse_result == 2)
+// 			map_started = 1;
+// 		if (!map_end && map_started)
+// 		{
+// 			if (parse_map_line(cub, line) == 1)
+// 				map_end = 1;
+// 		}
+// 		else if (map_end && *skip_whitespace(line))
+// 		{
+// 			printf("Error: Invalid line after map\n");
+// 			free(line);
+// 			close(fd);
+// 			cub->map[cub->map_height] = NULL;
+// 			return (1);
+// 		}
+// 		free(line);
+// 		line = get_next_line(fd);
+// 	}
+// 	close(fd);
+// 	cub->map[cub->map_height] = NULL;
+// 	return (0);
+// }

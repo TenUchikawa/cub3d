@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 05:56:14 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 05:38:03 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:31:32 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,27 @@
 
 int	init_config(t_cub3d *cub)
 {
-	for (int i = 0; i < 3; i++)
+	int	i;
+
+	i = -1;
+	while (++i < 3)
 	{
 		cub->config.floor[i] = -1;
 		cub->config.ceiling[i] = -1;
 	}
-	for (int i = 0; i < 4; i++)
+	i = -1;
+	while (++i < 4)
 	{
 		cub->config.texture_files[i] = NULL;
 	}
 	cub->map_height = 0;
 	cub->map_width = 0;
+	cub->player.x = 0;
+	cub->player.y = 0;
+	cub->player.dir_x = 0;
+	cub->player.dir_y = 0;
+	cub->player.plane_x = 0;
+	cub->player.plane_y = 0;
 	return (0);
 }
 
