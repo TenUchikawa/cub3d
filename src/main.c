@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 12:10:41 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 13:13:43 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,6 +208,11 @@ void	draw_floor(t_cub3d *cub3d, int floor_color)
 	}
 }
 
+int	create_color(int r, int g, int b)
+{
+	return ((r << 16) | (g << 8) | b);
+}
+
 void	draw_floor_and_ceiling(t_cub3d *cub3d)
 {
 	int	ceiling_color;
@@ -379,50 +384,6 @@ int	draw_scene(void *param)
 	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
 	return (0);
 }
-
-int	create_color(int r, int g, int b)
-{
-	return ((r << 16) | (g << 8) | b);
-}
-
-// int	draw_scene(void *param)
-// {
-// 	t_cub3d			*cub3d;
-// 	int				x;
-// 	t_wall_column	col;
-
-// 	cub3d = (t_cub3d *)param;
-// 	double camera_x, ray_dir_x, ray_dir_y;
-// 	double perp_wall_dist, wall_x;
-// 	int line_height, draw_start, draw_end, tex_index;
-// 	// 天井と床の描画
-// 	draw_floor_and_ceiling(cub3d);
-// 	// 壁の描画
-// 	x = 0;
-// 	while (x < WINDOW_WIDTH)
-// 	{
-// 		camera_x = 2 * x / (double)WINDOW_WIDTH - 1;
-// 		ray_dir_x = cub3d->player.dir_x + cub3d->player.plane_x * camera_x;
-// 		ray_dir_y = cub3d->player.dir_y + cub3d->player.plane_y * camera_x;
-// 		perp_wall_dist = cast_ray(cub3d, ray_dir_x, ray_dir_y, &tex_index,
-// 				&wall_x);
-// 		line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
-// 		draw_start = -line_height / 2 + WINDOW_HEIGHT / 2;
-// 		draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
-// 		if (draw_start < 0)
-// 			draw_start = 0;
-// 		if (draw_end >= WINDOW_HEIGHT)
-// 			draw_end = WINDOW_HEIGHT - 1;
-// 		col.start = draw_start;
-// 		col.end = draw_end;
-// 		col.tex_index = tex_index;
-// 		col.wall_x = wall_x;
-// 		draw_wall_column(cub3d, x, &col);
-// 		x++;
-// 	}
-// 	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
-// 	return (0);
-// }
 
 void	setup_hooks(t_cub3d *cub3d)
 {
