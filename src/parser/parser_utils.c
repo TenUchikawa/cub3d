@@ -6,23 +6,25 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 05:56:14 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 10:45:48 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 05:38:03 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-int	init_config(t_config *config)
+int	init_config(t_cub3d *cub)
 {
 	for (int i = 0; i < 3; i++)
 	{
-		config->floor[i] = -1;
-		config->ceiling[i] = -1;
+		cub->config.floor[i] = -1;
+		cub->config.ceiling[i] = -1;
 	}
 	for (int i = 0; i < 4; i++)
 	{
-		config->texture_files[i] = NULL;
+		cub->config.texture_files[i] = NULL;
 	}
+	cub->map_height = 0;
+	cub->map_width = 0;
 	return (0);
 }
 

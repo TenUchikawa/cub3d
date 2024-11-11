@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 05:36:31 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/10 14:37:22 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 08:02:55 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,32 +75,32 @@ int	check_colors(int color[3])
 	return (0);
 }
 
-int	set_player_location(t_cub3d *cub, int i, int j)
+int	set_player_location(t_cub3d *cub, int x, int y)
 {
-	cub->player.x = j + 0.5;
-	cub->player.y = i + 0.5;
-	if (cub->map[i][j] == 'N')
+	cub->player.x = x + 0.5;
+	cub->player.y = y + 0.5;
+	if (cub->map[y][x] == 'N')
 	{
 		cub->player.dir_x = 0;
 		cub->player.dir_y = -1;
 		cub->player.plane_x = 0.66;
 		cub->player.plane_y = 0;
 	}
-	else if (cub->map[i][j] == 'S')
+	else if (cub->map[y][x] == 'S')
 	{
 		cub->player.dir_x = 0;
 		cub->player.dir_y = 1;
 		cub->player.plane_x = -0.66;
 		cub->player.plane_y = 0;
 	}
-	else if (cub->map[i][j] == 'E')
+	else if (cub->map[y][x] == 'E')
 	{
 		cub->player.dir_x = 1;
 		cub->player.dir_y = 0;
 		cub->player.plane_x = 0;
 		cub->player.plane_y = 0.66;
 	}
-	else if (cub->map[i][j] == 'W')
+	else if (cub->map[y][x] == 'W')
 	{
 		cub->player.dir_x = -1;
 		cub->player.dir_y = 0;
@@ -115,15 +115,15 @@ int	check_player_start_location(t_cub3d *cub)
 	int	player_count;
 
 	player_count = 0;
-	for (int i = 0; cub->map[i]; i++)
+	for (int y = 0; cub->map[y]; y++)
 	{
-		for (int j = 0; cub->map[i][j]; j++)
+		for (int x = 0; cub->map[y][x]; x++)
 		{
-			if (cub->map[i][j] == 'N' || cub->map[i][j] == 'S'
-				|| cub->map[i][j] == 'W' || cub->map[i][j] == 'E')
+			if (cub->map[y][x] == 'N' || cub->map[y][x] == 'S'
+				|| cub->map[y][x] == 'W' || cub->map[y][x] == 'E')
 			{
 				player_count++;
-				set_player_location(cub, i, j);
+				set_player_location(cub, x,y);
 			}
 		}
 	}
@@ -137,8 +137,8 @@ int	check_player_start_location(t_cub3d *cub)
 
 int	is_valid_map_char(char c)
 {
-	return (c == '0' || c == '1' || c == 'N' || c == 'S' || c == 'E'
-		|| c == 'W');
+	return (c == '0' || c == '1' || c == 'N' || c == 'S' || c == 'E' || c == 'W'
+		|| c == ' ');
 }
 
 int	check_map_chars(char **map)
@@ -164,29 +164,6 @@ int	check_map_chars(char **map)
 	return (0);
 }
 
-int	check_map_borders(char **map)
-{
-	int	i;
-	int	j;
-
-	i = 0;
-	while (map[i])
-	{
-		// printf("%s\n", map[i]);
-		j = 0;
-		while (map[i][j])
-		{
-			if ((i == 0 || !map[i + 1]) && !(map[i][j] == '1'))
-				return (printf("Error: Map is not closed at top/bottom\n"), 1);
-			if ((j == 0 || !map[i][j + 1]) && !(map[i][j] == '1'))
-				return (printf("Error: Map is not closed at left/right\n"), 1);
-			j++;
-		}
-		i++;
-	}
-	return (0);
-}
-
 int	check_config(t_cub3d *cub)
 {
 	if (check_texture_paths(cub->config.texture_files) == 1)
@@ -199,7 +176,7 @@ int	check_config(t_cub3d *cub)
 		return (1);
 	if (check_map_chars(cub->map) == 1)
 		return (1);
-	if (check_map_borders(cub->map) == 1)
+	if (validate_map(cub) == 1)
 		return (1);
 	return (0);
 }

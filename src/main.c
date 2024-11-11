@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 12:28:20 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 09:51:56 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,22 +65,7 @@ int	init_image(t_cub3d *cub3d)
 	return (0);
 }
 
-void	draw_test_wall(t_cub3d *cub3d)
-{
-	int		y;
-	char	*pixel;
 
-	int x = WINDOW_WIDTH / 2; // 画面中央のx座標
-	y = 0;
-	while (y < WINDOW_HEIGHT) // 画面の高さ全体に渡る縦線を描画
-	{
-		pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp / 8));
-		*(unsigned int *)pixel = 0xFFFFFF; // 白色のピクセルを設定
-		y++;
-	}
-	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
-	// ウィンドウに画像を表示
-}
 
 void	draw_wall_column(t_cub3d *cub3d, int x, int start, int end,
 		int tex_index, double wall_x)
@@ -269,19 +254,19 @@ int	main(int argc, char **argv)
 {
 	t_cub3d cub3d;
 
-	init_config(&cub3d.config);
+	init_config((&cub3d));
 
 	if (argc != 2)
 	{
 		// printf("Usage: %s <map_file>\n", argv[0]);
 		// return (1);
-		argv[1] = "maps/good/cheese_maze.cub";
+		argv[1] = "maps/good/test_whitespace.cub";
 	}
 
 	if (parse_config(&cub3d, argv[1]) == 1)
 	{
-		printf("Error\nFailed to parse config\n");
-		return (1);
+		printf("Error Failed to parse config\n");
+		exit(1);
 	}
 
 	// マップの表示
@@ -292,7 +277,7 @@ int	main(int argc, char **argv)
 
 	if (check_config(&cub3d) == 1)
 	{
-		return (1);
+		exit(1);
 	}
 
 	// configの表示
@@ -305,12 +290,12 @@ int	main(int argc, char **argv)
 	// printf("WE texture: %s\n", cub3d.config.textures[2]);
 	// printf("EA texture: %s\n", cub3d.config.textures[3]);
 
-	if (init_window(&cub3d) == 1)
-		return (1);
-	if (init_image(&cub3d) == 1)
-		return (1);
-	setup_hooks(&cub3d);
-	mlx_loop(cub3d.mlx);
+	// if (init_window(&cub3d) == 1)
+	// 	return (1);
+	// if (init_image(&cub3d) == 1)
+	// 	return (1);
+	// setup_hooks(&cub3d);
+	// mlx_loop(cub3d.mlx);
 
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 09:31:58 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 09:39:45 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:43:04 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	handle_keypress(int keycode, t_cub3d *cub3d)
 {
-	if (keycode == 65307) //
+	if (keycode == 65307)
 		exit(0);
 	else if (keycode == 'w' || keycode == 'W')
 		move_player(cub3d, 1);

@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 09:48:09 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 07:40:18 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ typedef struct s_config
 	int			ceiling[3];
 	char *texture_files[4]; // NO, SO, WE, EA
 	t_texture	textures[4];
+
 }				t_config;
 
 typedef struct s_player
@@ -76,6 +77,8 @@ typedef struct s_cub3d
 	t_config	config;
 	t_player	player;
 	char		**map;
+	int			map_height;
+	int			map_width;
 
 	void *img;      // 画像データ用フィールド
 	char *img_data; // ピクセルデータにアクセスするためのアドレス
@@ -88,9 +91,11 @@ typedef struct s_cub3d
 // parser
 int				parse_config(t_cub3d *cub, const char *filename);
 int				check_config(t_cub3d *cub);
-int				init_config(t_config *config);
+int				init_config(t_cub3d *cub);
 int				is_number(char *str);
 int				check_cub_extension(char *filename);
+int				validate_map(t_cub3d *cub3d);
+
 // key_handle
 int				handle_keypress(int keycode, t_cub3d *cub3d);
 
