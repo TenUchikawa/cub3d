@@ -1,18 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fluid_fill.c                                       :+:      :+:    :+:   */
+/*   flood_fill.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/11 05:09:32 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 10:02:29 by tuchikaw         ###   ########.fr       */
+/*   Created: 2024/11/11 14:31:22 by tuchikaw          #+#    #+#             */
+/*   Updated: 2024/11/11 14:40:15 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 // 方向ベクトル (上下左右)
 
@@ -80,4 +78,37 @@ int	validate_map(t_cub3d *cub)
 		return (1);
 	}
 	return (0);
+}
+
+int	set_player_location(t_cub3d *cub, int x, int y)
+{
+	cub->player.x = x + 0.5;
+	cub->player.y = y + 0.5;
+	if (cub->map[y][x] == 'N')
+	{
+		cub->player.dir_y = -1;
+		cub->player.plane_x = 0.66;
+	}
+	else if (cub->map[y][x] == 'S')
+	{
+		cub->player.dir_y = 1;
+		cub->player.plane_x = -0.66;
+	}
+	else if (cub->map[y][x] == 'E')
+	{
+		cub->player.dir_x = 1;
+		cub->player.plane_y = 0.66;
+	}
+	else if (cub->map[y][x] == 'W')
+	{
+		cub->player.dir_x = -1;
+		cub->player.plane_y = -0.66;
+	}
+	return (0);
+}
+
+int	is_valid_map_char(char c)
+{
+	return (c == '0' || c == '1' || c == 'N' || c == 'S' || c == 'E' || c == 'W'
+		|| c == ' ');
 }

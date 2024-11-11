@@ -6,109 +6,11 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 13:13:43 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 15:04:12 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
-
-int	init_window(t_cub3d *cub3d)
-{
-	cub3d->mlx = mlx_init();
-	if (!cub3d->mlx)
-	{
-		printf("Error: MLX initialization failed\n");
-		return (1);
-	}
-	cub3d->window = mlx_new_window(cub3d->mlx, WINDOW_WIDTH, WINDOW_HEIGHT,
-			"cub3D");
-	if (!cub3d->window)
-	{
-		printf("Error: Window creation failed\n");
-		return (1);
-	}
-	return (0);
-}
-
-int	load_textures(t_cub3d *cub3d)
-{
-	char		**tfs;
-	t_texture	*ts;
-	const char	*texture_paths[4];
-	int			i;
-
-	ts = cub3d->config.textures;
-	tfs = cub3d->config.texture_files;
-	texture_paths[0] = tfs[0];
-	texture_paths[1] = tfs[1];
-	texture_paths[2] = tfs[2];
-	texture_paths[3] = tfs[3];
-	i = 0;
-	while (i < 4)
-	{
-		ts[i].img = mlx_xpm_file_to_image(cub3d->mlx, (char *)texture_paths[i],
-				&ts[i].width, &ts[i].height);
-		if (!ts[i].img)
-			return (1);
-		ts[i].data = mlx_get_data_addr(ts[i].img, &ts[i].bpp, &ts[i].size_line,
-				&ts[i].endian);
-		i++;
-	}
-	return (0);
-}
-
-int	init_image(t_cub3d *cub3d)
-{
-	if (load_textures(cub3d) == 1)
-		return (1);
-	cub3d->img = mlx_new_image(cub3d->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
-	if (!cub3d->img)
-	{
-		printf("Error: Image creation failed\n");
-		return (1);
-	}
-	cub3d->img_data = mlx_get_data_addr(cub3d->img, &cub3d->bpp,
-			&cub3d->size_line, &cub3d->endian);
-	return (0);
-}
-
-// void	draw_wall_column(t_cub3d *cub3d, int x, int start, int end,
-// 		int tex_index, double wall_x)
-// {
-// 	int		y;
-// 	int		tex_x;
-// 	int		tex_y;
-// 	double	step;
-// 	double	tex_pos;
-// 	char	*pixel;
-// 	char	*texture_data;
-// 	int		color;
-// 	int		line_height;
-// 	char	*img_pixel;
-
-// 	texture_data = cub3d->config.textures[tex_index].data;
-// 	line_height = end - start;
-// 	// テクスチャのX座標を計算
-// 	tex_x = (int)(wall_x * cub3d->config.textures[tex_index].width);
-// 	if (tex_x < 0)
-// 		tex_x = 0;
-// 	if (tex_x >= cub3d->config.textures[tex_index].width)
-// 		tex_x = cub3d->config.textures[tex_index].width - 1;
-// 	step = 1.0 * cub3d->config.textures[tex_index].height / line_height;
-// 	tex_pos = (start - WINDOW_HEIGHT / 2 + line_height / 2) * step;
-// 	for (y = start; y < end; y++)
-// 	{
-// 		tex_y = (int)tex_pos & (cub3d->config.textures[tex_index].height - 1);
-// 		tex_pos += step;
-// 		pixel = texture_data + (tex_y
-// 				* cub3d->config.textures[tex_index].size_line + tex_x
-// 				* (cub3d->config.textures[tex_index].bpp / 8));
-// 		color = *(unsigned int *)pixel;
-// 		img_pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
-// 					/ 8));
-// 		*(unsigned int *)img_pixel = color;
-// 	}
-// }
 
 int	get_tex_x(t_texture *texture, double wall_x)
 {
@@ -120,14 +22,6 @@ int	get_tex_x(t_texture *texture, double wall_x)
 	if (tex_x >= texture->width)
 		tex_x = texture->width - 1;
 	return (tex_x);
-}
-
-void	draw_pixel(t_cub3d *cub3d, int x, int y, int color)
-{
-	char	*img_pixel;
-
-	img_pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp / 8));
-	*(unsigned int *)img_pixel = color;
 }
 
 void	init_wall_column(t_cub3d *cub3d, t_wall_column *col)
@@ -226,85 +120,6 @@ void	draw_floor_and_ceiling(t_cub3d *cub3d)
 	draw_floor(cub3d, floor_color);
 }
 
-void	init_dda_x(t_cub3d *cub3d, t_dda *dda, double ray_dir_x)
-{
-	dda->delta_dist_x = fabs(1 / ray_dir_x);
-	if (ray_dir_x < 0)
-	{
-		dda->step_x = -1;
-		dda->side_dist_x = (cub3d->player.x - (int)cub3d->player.x)
-			* dda->delta_dist_x;
-	}
-	else
-	{
-		dda->step_x = 1;
-		dda->side_dist_x = ((int)cub3d->player.x + 1.0 - cub3d->player.x)
-			* dda->delta_dist_x;
-	}
-}
-
-void	init_dda_y(t_cub3d *cub3d, t_dda *dda, double ray_dir_y)
-{
-	dda->delta_dist_y = fabs(1 / ray_dir_y);
-	if (ray_dir_y < 0)
-	{
-		dda->step_y = -1;
-		dda->side_dist_y = (cub3d->player.y - (int)cub3d->player.y)
-			* dda->delta_dist_y;
-	}
-	else
-	{
-		dda->step_y = 1;
-		dda->side_dist_y = ((int)cub3d->player.y + 1.0 - cub3d->player.y)
-			* dda->delta_dist_y;
-	}
-}
-
-void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
-{
-	init_dda_x(cub3d, dda, ray_dir_x);
-	init_dda_y(cub3d, dda, ray_dir_y);
-}
-
-int	perform_dda(t_cub3d *cub3d, t_dda *dda, int *map_x, int *map_y)
-{
-	while (1)
-	{
-		if (dda->side_dist_x < dda->side_dist_y)
-		{
-			dda->side_dist_x += dda->delta_dist_x;
-			*map_x += dda->step_x;
-			dda->side = 0;
-		}
-		else
-		{
-			dda->side_dist_y += dda->delta_dist_y;
-			*map_y += dda->step_y;
-			dda->side = 1;
-		}
-		if (cub3d->map[*map_y][*map_x] == '1')
-			return (1);
-	}
-}
-
-int	determine_texture(t_ray *ray, t_dda *dda)
-{
-	if (dda->side == 0)
-	{
-		if (ray->ray_dir_x > 0)
-			return (2);
-		else
-			return (3);
-	}
-	else
-	{
-		if (ray->ray_dir_y > 0)
-			return (0);
-		else
-			return (1);
-	}
-}
-
 double	calculate_wall_distance(t_cub3d *cub3d, t_ray *ray, t_dda *dda,
 		double *wall_x)
 {
@@ -353,6 +168,85 @@ void	calculate_ray(t_cub3d *cub3d, t_ray *ray, int x)
 		ray->draw_start = 0;
 	if (ray->draw_end >= WINDOW_HEIGHT)
 		ray->draw_end = WINDOW_HEIGHT - 1;
+}
+
+void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
+{
+	init_dda_x(cub3d, dda, ray_dir_x);
+	init_dda_y(cub3d, dda, ray_dir_y);
+}
+
+int	determine_texture(t_ray *ray, t_dda *dda)
+{
+	if (dda->side == 0)
+	{
+		if (ray->ray_dir_x > 0)
+			return (2);
+		else
+			return (3);
+	}
+	else
+	{
+		if (ray->ray_dir_y > 0)
+			return (0);
+		else
+			return (1);
+	}
+}
+
+int	perform_dda(t_cub3d *cub3d, t_dda *dda, int *map_x, int *map_y)
+{
+	while (1)
+	{
+		if (dda->side_dist_x < dda->side_dist_y)
+		{
+			dda->side_dist_x += dda->delta_dist_x;
+			*map_x += dda->step_x;
+			dda->side = 0;
+		}
+		else
+		{
+			dda->side_dist_y += dda->delta_dist_y;
+			*map_y += dda->step_y;
+			dda->side = 1;
+		}
+		if (cub3d->map[*map_y][*map_x] == '1')
+			return (1);
+	}
+}
+
+void	init_dda_x(t_cub3d *cub3d, t_dda *dda, double ray_dir_x)
+{
+	dda->delta_dist_x = fabs(1 / ray_dir_x);
+	if (ray_dir_x < 0)
+	{
+		dda->step_x = -1;
+		dda->side_dist_x = (cub3d->player.x - (int)cub3d->player.x)
+			* dda->delta_dist_x;
+	}
+	else
+	{
+		dda->step_x = 1;
+		dda->side_dist_x = ((int)cub3d->player.x + 1.0 - cub3d->player.x)
+			* dda->delta_dist_x;
+	}
+}
+
+void	init_dda_y(t_cub3d *cub3d, t_dda *dda, double ray_dir_y)
+{
+	dda->delta_dist_y = fabs(1 / ray_dir_y);
+	if (ray_dir_y < 0)
+	{
+		dda->step_y = -1;
+		dda->side_dist_y = (cub3d->player.y - (int)cub3d->player.y)
+			* dda->delta_dist_y;
+	}
+	else
+	{
+		dda->step_y = 1;
+		dda->side_dist_y = ((int)cub3d->player.y + 1.0 - cub3d->player.y)
+			* dda->delta_dist_y;
+	}
 }
 
 void	draw_column(t_cub3d *cub3d, int x, t_ray *ray)

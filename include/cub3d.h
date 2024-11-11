@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 11:55:21 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 14:54:08 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,5 +139,15 @@ int				handle_keypress(int keycode, t_cub3d *cub3d);
 void			move_player(t_cub3d *cub3d, int direction);
 void			strafe_player(t_cub3d *cub3d, int direction);
 void			rotate_player(t_cub3d *cub3d, int direction);
+char			*skip_whitespace(char *line);
+void			init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x,
+					double ray_dir_y);
+void			init_dda_x(t_cub3d *cub3d, t_dda *dda, double ray_dir_x);
+void			init_dda_y(t_cub3d *cub3d, t_dda *dda, double ray_dir_y);
+int				perform_dda(t_cub3d *cub3d, t_dda *dda, int *map_x, int *map_y);
+int				determine_texture(t_ray *ray, t_dda *dda);
+double			calculate_wall_distance(t_cub3d *cub3d, t_ray *ray, t_dda *dda,
+					double *wall_x);
+double			cast_ray(t_cub3d *cub3d, t_ray *ray);
 
 #endif
