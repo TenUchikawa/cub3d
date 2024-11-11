@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 11:51:42 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 12:10:41 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,10 +166,64 @@ void	draw_wall_column(t_cub3d *cub3d, int x, t_wall_column *col)
 	}
 }
 
-void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
+void	draw_ceiling(t_cub3d *cub3d, int ceiling_color)
+{
+	int		x;
+	int		y;
+	char	*pixel;
+
+	y = 0;
+	while (y < WINDOW_HEIGHT / 2)
+	{
+		x = 0;
+		while (x < WINDOW_WIDTH)
+		{
+			pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
+						/ 8));
+			*(unsigned int *)pixel = ceiling_color;
+			x++;
+		}
+		y++;
+	}
+}
+
+void	draw_floor(t_cub3d *cub3d, int floor_color)
+{
+	int		x;
+	int		y;
+	char	*pixel;
+
+	y = WINDOW_HEIGHT / 2;
+	while (y < WINDOW_HEIGHT)
+	{
+		x = 0;
+		while (x < WINDOW_WIDTH)
+		{
+			pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
+						/ 8));
+			*(unsigned int *)pixel = floor_color;
+			x++;
+		}
+		y++;
+	}
+}
+
+void	draw_floor_and_ceiling(t_cub3d *cub3d)
+{
+	int	ceiling_color;
+	int	floor_color;
+
+	ceiling_color = create_color(cub3d->config.ceiling[0],
+			cub3d->config.ceiling[1], cub3d->config.ceiling[2]);
+	floor_color = create_color(cub3d->config.floor[0], cub3d->config.floor[1],
+			cub3d->config.floor[2]);
+	draw_ceiling(cub3d, ceiling_color);
+	draw_floor(cub3d, floor_color);
+}
+
+void	init_dda_x(t_cub3d *cub3d, t_dda *dda, double ray_dir_x)
 {
 	dda->delta_dist_x = fabs(1 / ray_dir_x);
-	dda->delta_dist_y = fabs(1 / ray_dir_y);
 	if (ray_dir_x < 0)
 	{
 		dda->step_x = -1;
@@ -182,6 +236,11 @@ void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
 		dda->side_dist_x = ((int)cub3d->player.x + 1.0 - cub3d->player.x)
 			* dda->delta_dist_x;
 	}
+}
+
+void	init_dda_y(t_cub3d *cub3d, t_dda *dda, double ray_dir_y)
+{
+	dda->delta_dist_y = fabs(1 / ray_dir_y);
 	if (ray_dir_y < 0)
 	{
 		dda->step_y = -1;
@@ -194,6 +253,12 @@ void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
 		dda->side_dist_y = ((int)cub3d->player.y + 1.0 - cub3d->player.y)
 			* dda->delta_dist_y;
 	}
+}
+
+void	init_dda(t_cub3d *cub3d, t_dda *dda, double ray_dir_x, double ray_dir_y)
+{
+	init_dda_x(cub3d, dda, ray_dir_x);
+	init_dda_y(cub3d, dda, ray_dir_y);
 }
 
 int	perform_dda(t_cub3d *cub3d, t_dda *dda, int *map_x, int *map_y)
@@ -217,32 +282,102 @@ int	perform_dda(t_cub3d *cub3d, t_dda *dda, int *map_x, int *map_y)
 	}
 }
 
-double	cast_ray(t_cub3d *cub3d, double ray_dir_x, double ray_dir_y,
-		int *tex_index, double *wall_x)
+int	determine_texture(t_ray *ray, t_dda *dda)
+{
+	if (dda->side == 0)
+	{
+		if (ray->ray_dir_x > 0)
+			return (2);
+		else
+			return (3);
+	}
+	else
+	{
+		if (ray->ray_dir_y > 0)
+			return (0);
+		else
+			return (1);
+	}
+}
+
+double	calculate_wall_distance(t_cub3d *cub3d, t_ray *ray, t_dda *dda,
+		double *wall_x)
+{
+	double	perp_wall_dist;
+
+	if (dda->side == 0)
+	{
+		perp_wall_dist = (dda->side_dist_x - dda->delta_dist_x);
+		*wall_x = cub3d->player.y + perp_wall_dist * ray->ray_dir_y;
+	}
+	else
+	{
+		perp_wall_dist = (dda->side_dist_y - dda->delta_dist_y);
+		*wall_x = cub3d->player.x + perp_wall_dist * ray->ray_dir_x;
+	}
+	*wall_x -= floor(*wall_x);
+	return (perp_wall_dist);
+}
+
+double	cast_ray(t_cub3d *cub3d, t_ray *ray)
 {
 	int		map_x;
 	int		map_y;
-	double	perp_wall_dist;
 	t_dda	dda;
 
 	map_x = (int)cub3d->player.x;
 	map_y = (int)cub3d->player.y;
-	init_dda(cub3d, &dda, ray_dir_x, ray_dir_y);
+	init_dda(cub3d, &dda, ray->ray_dir_x, ray->ray_dir_y);
 	perform_dda(cub3d, &dda, &map_x, &map_y);
-	if (dda.side == 0)
+	ray->tex_index = determine_texture(ray, &dda);
+	return (calculate_wall_distance(cub3d, ray, &dda, &ray->wall_x));
+}
+
+void	calculate_ray(t_cub3d *cub3d, t_ray *ray, int x)
+{
+	ray->camera_x = 2 * x / (double)WINDOW_WIDTH - 1;
+	ray->ray_dir_x = cub3d->player.dir_x + cub3d->player.plane_x
+		* ray->camera_x;
+	ray->ray_dir_y = cub3d->player.dir_y + cub3d->player.plane_y
+		* ray->camera_x;
+	ray->perp_wall_dist = cast_ray(cub3d, ray);
+	ray->line_height = (int)(WINDOW_HEIGHT / ray->perp_wall_dist);
+	ray->draw_start = -ray->line_height / 2 + WINDOW_HEIGHT / 2;
+	ray->draw_end = ray->line_height / 2 + WINDOW_HEIGHT / 2;
+	if (ray->draw_start < 0)
+		ray->draw_start = 0;
+	if (ray->draw_end >= WINDOW_HEIGHT)
+		ray->draw_end = WINDOW_HEIGHT - 1;
+}
+
+void	draw_column(t_cub3d *cub3d, int x, t_ray *ray)
+{
+	t_wall_column	col;
+
+	col.start = ray->draw_start;
+	col.end = ray->draw_end;
+	col.tex_index = ray->tex_index;
+	col.wall_x = ray->wall_x;
+	draw_wall_column(cub3d, x, &col);
+}
+
+int	draw_scene(void *param)
+{
+	t_cub3d	*cub3d;
+	t_ray	ray;
+	int		x;
+
+	cub3d = (t_cub3d *)param;
+	draw_floor_and_ceiling(cub3d);
+	x = 0;
+	while (x < WINDOW_WIDTH)
 	{
-		perp_wall_dist = (dda.side_dist_x - dda.delta_dist_x);
-		*wall_x = cub3d->player.y + perp_wall_dist * ray_dir_y;
-		*tex_index = (ray_dir_x > 0) ? 2 : 3; // 西か東
+		calculate_ray(cub3d, &ray, x);
+		draw_column(cub3d, x, &ray);
+		x++;
 	}
-	else
-	{
-		perp_wall_dist = (dda.side_dist_y - dda.delta_dist_y);
-		*wall_x = cub3d->player.x + perp_wall_dist * ray_dir_x;
-		*tex_index = (ray_dir_y > 0) ? 0 : 1; // 北か南
-	}
-	*wall_x -= floor(*wall_x);
-	return (perp_wall_dist);
+	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
+	return (0);
 }
 
 int	create_color(int r, int g, int b)
@@ -250,77 +385,44 @@ int	create_color(int r, int g, int b)
 	return ((r << 16) | (g << 8) | b);
 }
 
-void	draw_floor_and_ceiling(t_cub3d *cub3d)
-{
-	int		ceiling_color;
-	int		floor_color;
-	char	*pixel;
+// int	draw_scene(void *param)
+// {
+// 	t_cub3d			*cub3d;
+// 	int				x;
+// 	t_wall_column	col;
 
-	ceiling_color = create_color(cub3d->config.ceiling[0],
-			cub3d->config.ceiling[1], cub3d->config.ceiling[2]);
-	floor_color = create_color(cub3d->config.floor[0], cub3d->config.floor[1],
-			cub3d->config.floor[2]);
-	int x, y;
-	// 天井の描画
-	for (y = 0; y < WINDOW_HEIGHT / 2; y++)
-	{
-		for (x = 0; x < WINDOW_WIDTH; x++)
-		{
-			pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
-						/ 8));
-			*(unsigned int *)pixel = ceiling_color;
-		}
-	}
-	// 床の描画
-	for (y = WINDOW_HEIGHT / 2; y < WINDOW_HEIGHT; y++)
-	{
-		for (x = 0; x < WINDOW_WIDTH; x++)
-		{
-			pixel = cub3d->img_data + (y * cub3d->size_line + x * (cub3d->bpp
-						/ 8));
-			*(unsigned int *)pixel = floor_color;
-		}
-	}
-}
-
-int	draw_scene(void *param)
-{
-	t_cub3d			*cub3d;
-	int				x;
-	t_wall_column	col;
-
-	cub3d = (t_cub3d *)param;
-	double camera_x, ray_dir_x, ray_dir_y;
-	double perp_wall_dist, wall_x;
-	int line_height, draw_start, draw_end, tex_index;
-	// 天井と床の描画
-	draw_floor_and_ceiling(cub3d);
-	// 壁の描画
-	x = 0;
-	while (x < WINDOW_WIDTH)
-	{
-		camera_x = 2 * x / (double)WINDOW_WIDTH - 1;
-		ray_dir_x = cub3d->player.dir_x + cub3d->player.plane_x * camera_x;
-		ray_dir_y = cub3d->player.dir_y + cub3d->player.plane_y * camera_x;
-		perp_wall_dist = cast_ray(cub3d, ray_dir_x, ray_dir_y, &tex_index,
-				&wall_x);
-		line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
-		draw_start = -line_height / 2 + WINDOW_HEIGHT / 2;
-		draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
-		if (draw_start < 0)
-			draw_start = 0;
-		if (draw_end >= WINDOW_HEIGHT)
-			draw_end = WINDOW_HEIGHT - 1;
-		col.start = draw_start;
-		col.end = draw_end;
-		col.tex_index = tex_index;
-		col.wall_x = wall_x;
-		draw_wall_column(cub3d, x, &col);
-		x++;
-	}
-	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
-	return (0);
-}
+// 	cub3d = (t_cub3d *)param;
+// 	double camera_x, ray_dir_x, ray_dir_y;
+// 	double perp_wall_dist, wall_x;
+// 	int line_height, draw_start, draw_end, tex_index;
+// 	// 天井と床の描画
+// 	draw_floor_and_ceiling(cub3d);
+// 	// 壁の描画
+// 	x = 0;
+// 	while (x < WINDOW_WIDTH)
+// 	{
+// 		camera_x = 2 * x / (double)WINDOW_WIDTH - 1;
+// 		ray_dir_x = cub3d->player.dir_x + cub3d->player.plane_x * camera_x;
+// 		ray_dir_y = cub3d->player.dir_y + cub3d->player.plane_y * camera_x;
+// 		perp_wall_dist = cast_ray(cub3d, ray_dir_x, ray_dir_y, &tex_index,
+// 				&wall_x);
+// 		line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
+// 		draw_start = -line_height / 2 + WINDOW_HEIGHT / 2;
+// 		draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
+// 		if (draw_start < 0)
+// 			draw_start = 0;
+// 		if (draw_end >= WINDOW_HEIGHT)
+// 			draw_end = WINDOW_HEIGHT - 1;
+// 		col.start = draw_start;
+// 		col.end = draw_end;
+// 		col.tex_index = tex_index;
+// 		col.wall_x = wall_x;
+// 		draw_wall_column(cub3d, x, &col);
+// 		x++;
+// 	}
+// 	mlx_put_image_to_window(cub3d->mlx, cub3d->window, cub3d->img, 0, 0);
+// 	return (0);
+// }
 
 void	setup_hooks(t_cub3d *cub3d)
 {

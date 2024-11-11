@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:45:10 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 05:23:18 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 12:12:15 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,8 @@ char	*get_to_next_newline(int fd, char *static_char)
 
 char	*get_next_line(int fd)
 {
-	char *line;
-	static char *static_char[4096];
+	char		*line;
+	static char	*static_char[4096];
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);

@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/19 21:24:08 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 05:15:04 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 12:11:51 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,9 @@ char	*ft_strjoin(char *s1, char *s2)
 
 char	*get_to_nr(char *static_char)
 {
-	char *newline_address;
-	int strlen;
-	char *line;
+	char	*newline_address;
+	char	*line;
+	int		strlen;
 
 	if (!static_char || static_char[0] == '\0')
 		return (NULL);

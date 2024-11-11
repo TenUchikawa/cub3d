@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 11:51:16 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/11 11:55:21 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,19 @@ typedef struct s_dda
 	int			step_y;
 	int			side;
 }				t_dda;
+
+typedef struct s_ray
+{
+	double		camera_x;
+	double		ray_dir_x;
+	double		ray_dir_y;
+	double		perp_wall_dist;
+	double		wall_x;
+	int			tex_index;
+	int			line_height;
+	int			draw_start;
+	int			draw_end;
+}				t_ray;
 
 // parser
 int				parse_config(t_cub3d *cub, const char *filename);
