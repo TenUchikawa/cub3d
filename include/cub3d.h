@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 14:54:08 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:05:17 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,5 +149,12 @@ int				determine_texture(t_ray *ray, t_dda *dda);
 double			calculate_wall_distance(t_cub3d *cub3d, t_ray *ray, t_dda *dda,
 					double *wall_x);
 double			cast_ray(t_cub3d *cub3d, t_ray *ray);
+// void			draw_pixel(t_cub3d *cub3d, int x, int y, int color);
+// int				init_window(t_cub3d *cub3d);
+// int				init_image(t_cub3d *cub3d);
+void			draw_wall_column(t_cub3d *cub3d, int x, t_wall_column *col);
+void			init_wall_column(t_cub3d *cub3d, t_wall_column *col);
+void			draw_ceiling(t_cub3d *cub3d, int ceiling_color);
+void			draw_floor(t_cub3d *cub3d, int floor_color);
 
 #endif

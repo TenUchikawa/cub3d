@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/14 13:01:11 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/08 05:23:16 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:07:55 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,7 @@
 
 char	*get_next_line(int fd);
 char	*get_to_nr(char *static_char);
+char	*get_to_next_newline(int fd, char *static_char);
+char	*get_new_line(char *static_char);
 
 #endif
