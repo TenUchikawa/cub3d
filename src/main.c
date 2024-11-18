@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/19 03:24:56 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/19 03:38:00 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,9 @@ int	draw_scene(void *param)
 	return (0);
 }
 
-int	close_window(t_cub3d *data)
+int	close_window(t_cub3d *cub)
 {
+	(void)cub;
 	exit(0);
 	return (0);
 }

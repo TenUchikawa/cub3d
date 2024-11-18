@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hakobaya <hakobaya@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/11 14:31:21 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/19 01:31:19 by hakobaya         ###   ########.fr       */
+/*   Updated: 2024/11/19 03:41:59 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,6 @@ int	parse_color(char *line, int color[3])
 
 int	parse_texture(char *line, char **texture)
 {
-	int	i;
-
 	if (*texture)
 	{
 		printf("Error: Texture path is set multiple times\n");

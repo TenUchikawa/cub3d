@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:30:50 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/12 12:05:17 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/19 03:42:11 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,12 +149,28 @@ int				determine_texture(t_ray *ray, t_dda *dda);
 double			calculate_wall_distance(t_cub3d *cub3d, t_ray *ray, t_dda *dda,
 					double *wall_x);
 double			cast_ray(t_cub3d *cub3d, t_ray *ray);
-// void			draw_pixel(t_cub3d *cub3d, int x, int y, int color);
-// int				init_window(t_cub3d *cub3d);
-// int				init_image(t_cub3d *cub3d);
+void			draw_pixel(t_cub3d *cub3d, int x, int y, int color);
+int				init_window(t_cub3d *cub3d);
+int				init_image(t_cub3d *cub3d);
 void			draw_wall_column(t_cub3d *cub3d, int x, t_wall_column *col);
 void			init_wall_column(t_cub3d *cub3d, t_wall_column *col);
 void			draw_ceiling(t_cub3d *cub3d, int ceiling_color);
 void			draw_floor(t_cub3d *cub3d, int floor_color);
-
+void			draw_column(t_cub3d *cub3d, int x, t_ray *ray);
+void			calculate_ray(t_cub3d *cub3d, t_ray *ray, int x);
+void			draw_floor_and_ceiling(t_cub3d *cub3d);
+int				load_textures(t_cub3d *cub3d);
+int				parse_map_line(t_cub3d *cub, char *line);
+void			replace_end_nl_to_eol(char *line);
+int				parse_texture(char *line, char **texture);
+int				parse_color(char *line, int color[3]);
+int				parse_settings_and_map(t_cub3d *cub, int fd);
+int				is_valid_map_char(char c);
+int				set_player_location(t_cub3d *cub, int x, int y);
+int				check_xpm_extension(char *filename);
+int				check_map_chars(char **map);
+int				check_player_start_location(t_cub3d *cub);
+int				check_colors(int color[3]);
+int				check_texture_paths(char *textures[4]);
+int				create_color(int r, int g, int b);
 #endif
