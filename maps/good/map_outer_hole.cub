@@ -1,0 +1,18 @@
+NO textures/gal/gal1.xpm
+SO textures/gal/gal2.xpm
+WE textures/gal/gal3.xpm
+EA textures/gal/gal4.xpm
+
+F 15, 50, 5
+C 51, 105, 1
+
+111111111111
+1         11
+1          1
+111111111111
+100000000001
+10S000000001
+100000000001
+111111111111
+11         1
+111111111111
