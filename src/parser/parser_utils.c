@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: hakobaya <hakobaya@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/11 14:31:21 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/11 15:03:29 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/19 01:31:19 by hakobaya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ int	parse_map_line(t_cub3d *cub, char *line)
 		cub->map_width = len;
 	if (len == 0)
 		return (1);
-	cub->map[cub->map_height] = strdup(line);
+	cub->map[cub->map_height] = ft_strdup(line);
 	cub->map_height++;
 	return (0);
 }
@@ -76,6 +76,6 @@ char	*skip_whitespace(char *line)
 
 void	replace_end_nl_to_eol(char *line)
 {
-	if (line[strlen(line) - 1] == '\n')
-		line[strlen(line) - 1] = '\0';
+	if (line[ft_strlen(line) - 1] == '\n')
+		line[ft_strlen(line) - 1] = '\0';
 }
