@@ -6,7 +6,7 @@
 /*   By: tuchikaw <tuchikaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 02:20:39 by tuchikaw          #+#    #+#             */
-/*   Updated: 2024/11/12 12:08:29 by tuchikaw         ###   ########.fr       */
+/*   Updated: 2024/11/19 03:24:56 by tuchikaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,15 @@ int	draw_scene(void *param)
 	return (0);
 }
 
+int	close_window(t_cub3d *data)
+{
+	exit(0);
+	return (0);
+}
+
 void	setup_hooks(t_cub3d *cub3d)
 {
+	mlx_hook(cub3d->window, 17, 0, close_window, &cub3d);
 	mlx_hook(cub3d->window, 2, 1L << 0, handle_keypress, cub3d);
 	mlx_loop_hook(cub3d->mlx, draw_scene, cub3d);
 }
